@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>百度贴吧 - 交互式原型</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-color: #007AFF;
+            --secondary-color: #5856D6;
+            --success-color: #34C759;
+            --warning-color: #FF9500;
+            --error-color: #FF3B30;
+            --text-primary: #000000;
+            --text-secondary: #8E8E93;
+            --background-primary: #FFFFFF;
+            --background-secondary: #F2F2F7;
+            --border-color: #C6C6C8;
+            --shadow-light: rgba(0, 0, 0, 0.1);
+            --shadow-medium: rgba(0, 0, 0, 0.2);
+            --shadow-heavy: rgba(0, 0, 0, 0.3);
+            --border-radius-small: 8px;
+            --border-radius-medium: 12px;
+            --border-radius-large: 16px;
+            --transition-fast: 0.2s ease;
+            --transition-medium: 0.3s ease;
+            --transition-slow: 0.5s ease;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+            background-color: var(--background-secondary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1200px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* 导航栏 */
+        .navbar {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            box-shadow: var(--shadow-light);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .nav-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--text-primary);
+            font-weight: 500;
+            transition: color var(--transition-fast);
+            padding: 0.5rem 1rem;
+            border-radius: var(--border-radius-small);
+        }
+
+        .nav-links a:hover, .nav-links a.active {
+            color: var(--primary-color);
+            background: rgba(0, 122, 255, 0.1);
+        }
+
+        .nav-user {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: var(--border-radius-medium);
+            cursor: pointer;
+            font-weight: 600;
+            transition: all var(--transition-fast);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: var(--background-primary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-medium);
+        }
+
+        /* 页面内容 */
+        .page {
+            display: none;
+            min-height: 80vh;
+            padding: 2rem 0;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        /* 首页样式 */
+        .hero-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 4rem 0;
+            text-align: center;
+            margin-bottom: 2rem;
+            border-radius: var(--border-radius-large);
+        }
+
+        .hero-content h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            font-weight: 300;
+        }
+
+        .search-box {
+            display: flex;
+            max-width: 600px;
+            margin: 2rem auto 0;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 25px;
+            overflow: hidden;
+            box-shadow: var(--shadow-heavy);
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 1rem 1.5rem;
+            border: none;
+            font-size: 1rem;
+            outline: none;
+            background: transparent;
+            color: var(--text-primary);
+        }
+
+        .search-btn {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .section {
+            background: var(--background-primary);
+            border-radius: var(--border-radius-large);
+            padding: 2rem;
+            box-shadow: var(--shadow-light);
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--background-secondary);
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .tieba-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 1rem;
+        }
+
+        .tieba-item {
+            text-align: center;
+            padding: 1rem;
+            border-radius: var(--border-radius-medium);
+            transition: all var(--transition-fast);
+            cursor: pointer;
+            border: 1px solid var(--border-color);
+        }
+
+        .tieba-item:hover {
+            background-color: var(--background-secondary);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-medium);
+        }
+
+        .tieba-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: var(--border-radius-medium);
+            margin: 0 auto 0.5rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 1.25rem;
+        }
+
+        .post-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .post-item {
+            padding: 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius-medium);
+            transition: all var(--transition-fast);
+            cursor: pointer;
+        }
+
+        .post-item:hover {
+            border-color: var(--primary-color);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-light);
+        }
+
+        .post-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .post-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 0.875rem;
+        }
+
+        .post-title {
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            line-height: 1.4;
+            margin-bottom: 0.5rem;
+        }
+
+        .post-stats {
+            display: flex;
+            gap: 1rem;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        /* 贴吧详情页 */
+        .tieba-header {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.9) 0%, rgba(118, 75, 162, 0.9) 100%);
+            color: white;
+            padding: 3rem 0;
+            margin-bottom: 2rem;
+        }
+
+        .tieba-info {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .tieba-main-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: var(--border-radius-large);
+            background: rgba(255, 255, 255, 0.95);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        .action-bar {
+            background: var(--background-primary);
+            padding: 1rem 0;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+            
+            .nav-links {
+                display: none;
+            }
+            
+            .hero-content h1 {
+                font-size: 2rem;
+            }
+        }
+
+        /* 模态框 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--background-primary);
+            border-radius: var(--border-radius-large);
+            padding: 2rem;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-secondary);
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius-small);
+            font-size: 1rem;
+        }
+
+        .form-textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius-small);
+            font-size: 1rem;
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        /* 富文本编辑器模拟 */
+        .editor-toolbar {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            padding: 0.5rem;
+            background: var(--background-secondary);
+            border-radius: var(--border-radius-small);
+        }
+
+        .editor-btn {
+            padding: 0.5rem;
+            border: none;
+            background: none;
+            cursor: pointer;
+            border-radius: var(--border-radius-small);
+        }
+
+        .editor-btn:hover {
+            background: var(--background-primary);
+        }
+
+        /* 消息提示 */
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--success-color);
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: var(--border-radius-medium);
+            box-shadow: var(--shadow-heavy);
+            z-index: 3000;
+            transform: translateX(100%);
+            transition: transform var(--transition-medium);
+        }
+
+        .toast.show {
+            transform: translateX(0);
+        }
+
+        .toast.error {
+            background: var(--error-color);
+        }
+
+        .toast.warning {
+            background: var(--warning-color);
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-container">
+                <a href="#" class="logo" onclick="showPage('home')">百度贴吧</a>
+                <ul class="nav-links">
+                    <li><a href="#" class="nav-link active" onclick="showPage('home')">首页</a></li>
+                    <li><a href="#" class="nav-link" onclick="showPage('tieba-list')">贴吧</a></li>
+                    <li><a href="#" class="nav-link" onclick="showPage('search')">搜索</a></li>
+                    <li><a href="#" class="nav-link" onclick="showPage('profile')">我的</a></li>
+                </ul>
+                <div class="nav-user">
+                    <button class="btn btn-secondary" onclick="showModal('login-modal')">登录</button>
+                    <button class="btn btn-primary" onclick="showModal('register-modal')">注册</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 首页 -->
+    <div id="home" class="page active">
+        <div class="container">
+            <div class="hero-section">
+                <div class="hero-content">
+                    <h1>欢迎来到百度贴吧</h1>
+                    <p>发现兴趣，结交朋友，分享生活</p>
+                    <div class="search-box">
+                        <input type="text" class="search-input" placeholder="搜索贴吧、帖子、用户..." id="main-search">
+                        <button class="search-btn" onclick="performSearch()">搜索</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="main-content">
+                <div class="section">
+                    <div class="section-header">
+                        <h2 class="section-title">热门贴吧</h2>
+                        <a href="#" onclick="showPage('tieba-list')">查看全部</a>
+                    </div>
+                    <div class="tieba-grid" id="hot-tiebas">
+                        <!-- 热门贴吧将通过JavaScript动态生成 -->
+                    </div>
+                </div>
+
+                <div class="section">
+                    <div class="section-header">
+                        <h2 class="section-title">热门帖子</h2>
+                        <a href="#" onclick="showPage('search')">更多</a>
+                    </div>
+                    <div class="post-list" id="hot-posts">
+                        <!-- 热门帖子将通过JavaScript动态生成 -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 贴吧列表页 -->
+    <div id="tieba-list" class="page">
+        <div class="container">
+            <div class="section">
+                <div class="section-header">
+                    <h2 class="section-title">所有贴吧</h2>
+                    <button class="btn btn-primary" onclick="showModal('create-tieba-modal')">创建贴吧</button>
+                </div>
+                <div class="tieba-grid" id="all-tiebas">
+                    <!-- 所有贴吧将通过JavaScript动态生成 -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 贴吧详情页 -->
+    <div id="tieba-detail" class="page">
+        <div class="tieba-header">
+            <div class="container">
+                <div class="tieba-info">
+                    <div class="tieba-main-avatar" id="tieba-avatar">贴</div>
+                    <div class="tieba-details">
+                        <h1 id="tieba-name">贴吧名称</h1>
+                        <p id="tieba-description">贴吧描述</p>
+                        <div class="tieba-stats">
+                            <span class="stat-item">成员: <span id="member-count">0</span></span>
+                            <span class="stat-item">帖子: <span id="post-count">0</span></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="container">
+            <div class="action-bar">
+                <div class="action-buttons">
+                    <button class="btn btn-primary" onclick="showModal('create-post-modal')">发帖</button>
+                    <button class="btn btn-secondary" id="join-btn" onclick="toggleJoin()">加入贴吧</button>
+                </div>
+            </div>
+            <div class="section">
+                <div class="post-list" id="tieba-posts">
+                    <!-- 贴吧帖子将通过JavaScript动态生成 -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 搜索页 -->
+    <div id="search" class="page">
+        <div class="container">
+            <div class="section">
+                <div class="search-box" style="margin: 2rem auto;">
+                    <input type="text" class="search-input" placeholder="输入关键词搜索..." id="search-input">
+                    <button class="search-btn" onclick="performSearch()">搜索</button>
+                </div>
+                <div id="search-results">
+                    <!-- 搜索结果将通过JavaScript动态生成 -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 个人中心页 -->
+    <div id="profile" class="page">
+        <div class="container">
+            <div class="section">
+                <div class="section-header">
+                    <h2 class="section-title">个人中心</h2>
+                    <button class="btn btn-secondary" onclick="showModal('edit-profile-modal')">编辑资料</button>
+                </div>
+                <div id="profile-content">
+                    <!-- 个人资料将通过JavaScript动态生成 -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 模态框区域 -->
+    <div id="login-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>用户登录</h3>
+                <button class="modal-close" onclick="closeModal('login-modal')">&times;</button>
+            </div>
+            <form onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label class="form-label">用户名/邮箱</label>
+                    <input type="text" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">密码</label>
+                    <input type="password" class="form-input" required>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%;">登录</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="register-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>用户注册</h3>
+                <button class="modal-close" onclick="closeModal('register-modal')">&times;</button>
+            </div>
+            <form onsubmit="handleRegister(event)">
+                <div class="form-group">
+                    <label class="form-label">用户名</label>
+                    <input type="text" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">邮箱</label>
+                    <input type="email" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">密码</label>
+                    <input type="password" class="form-input" required>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%;">注册</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="create-tieba-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>创建贴吧</h3>
+                <button class="modal-close" onclick="closeModal('create-tieba-modal')">&times;</button>
+            </div>
+            <form onsubmit="handleCreateTieba(event)">
+                <div class="form-group">
+                    <label class="form-label">贴吧名称</label>
+                    <input type="text" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">贴吧描述</label>
+                    <textarea class="form-textarea" required></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%;">创建贴吧</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="create-post-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>发布新帖</h3>
+                <button class="modal-close" onclick="closeModal('create-post-modal')">&times;</button>
+            </div>
+            <form onsubmit="handleCreatePost(event)">
+                <div class="form-group">
+                    <label class="form-label">帖子标题</label>
+                    <input type="text" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">帖子内容</label>
+                    <div class="editor-toolbar">
+                        <button type="button" class="editor-btn" onclick="formatText('bold')"><b>B</b></button>
+                        <button type="button" class="editor-btn" onclick="formatText('italic')"><i>I</i></button>
+                        <button type="button" class="editor-btn" onclick="formatText('underline')"><u>U</u></button>
+                    </div>
+                    <textarea class="form-textarea" required></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%;">发布帖子</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- 消息提示 -->
+    <div id="toast" class="toast"></div>
+
+    <script src="app.js"></script>
+</body>
+</html>
